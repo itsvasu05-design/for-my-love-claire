@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Message for My Girl</title>
+    <style>
+        body { 
+            background-image: url('bg.JPG'); 
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            background-color: #ffe6e6; 
+            font-family: 'Arial', sans-serif;
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            overflow-x: hidden;
+            /* Custom Heart Cursor */
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24"><path fill="%23ff4757" d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>'), auto;
+        }
+
+        /* --- QUESTION OVERLAY --- */
+        #question-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 235, 235, 0.98);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 2000; transition: opacity 0.5s ease;
+        }
+
+        #question-screen h1 { color: #d6336c; font-size: 3em; margin-bottom: 30px; padding: 0 20px; }
+
+        .button-group { display: flex; gap: 20px; align-items: center; justify-content: center; min-height: 200px; }
+
+        .ans-btn {
+            padding: 15px 40px; font-size: 1.5em; border-radius: 50px; border: none;
+            cursor: pointer; transition: all 0.2s ease; white-space: nowrap;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        #yes-btn { background-color: #ff4757; color: white; z-index: 2001; animation: pulse 1.5s infinite; }
+        #no-btn { background-color: #ced4da; color: #333; }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0.7); }
+            70% { box-shadow: 0 0 0 20px rgba(255, 71, 87, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 71, 87, 0); }
+        }
+
+        /* --- MAIN CONTENT --- */
+        #main-content { display: none; opacity: 0; transition: opacity 1s ease; }
+        h1 { color: #d6336c; font-size: 2.5em; text-shadow: 2px 2px 8px rgba(255, 255, 255, 0.9); }
+
+        #counter-box {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(5px);
+            margin: 10px auto; padding: 15px; border-radius: 15px;
+            max-width: 450px; color: #d6336c; font-weight: bold; font-size: 1.2em;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .gallery-container { 
+            width: 90%; max-width: 400px; height: 400px; margin: 20px auto; 
+            border-radius: 15px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.3); 
+            position: relative; background-color: white; 
+        }
+
+        .photo { width: 100%; height: 100%; object-fit: cover; display: none; }
+        .photo.active { display: block; }
+
+        .letter-box { 
+            background: rgba(255, 255, 255, 0.6); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); 
+            max-width: 500px; margin: 30px auto; padding: 30px; border-radius: 20px; 
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2); display: none; animation: fadeIn 1s; 
+        }
+
+        .btn { background-color: #ff4757; color: white; border: none; padding: 15px 30px; border-radius: 50px; cursor: pointer; margin-top: 20px; font-size: 1.1em; transition: 0.2s; }
+        .btn:active { transform: scale(0.95); }
+
+        /* --- COUPONS --- */
+        #coupon-section { display: none; margin-top: 30px; animation: fadeIn 1.5s; padding-bottom: 80px; }
+        .coupon-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 15px; margin-top: 20px; }
+        .coupon {
+            width: 160px; height: 110px; background: #ff4757; color: white;
+            display: flex; justify-content: center; align-items: center; text-align: center;
+            border-radius: 15px; cursor: pointer; font-weight: bold; padding: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2); transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            font-size: 0.9em;
+        }
+        .coupon.opened { background: white; color: #ff4757; border: 3px dashed #ff4757; cursor: default; transform: scale(1.1); font-size: 1em; }
+
+        /* --- FALLING ELEMENTS --- */
+        .falling-emoji { 
+            position: fixed; pointer-events: auto; z-index: 3000; 
+            animation: fall linear forwards; cursor: pointer;
+        }
+        @keyframes fall { to { transform: translateY(110vh); } }
+
+        .nickname-pop {
+            position: fixed; color: #d6336c; font-weight: bold; font-size: 1.2em;
+            text-shadow: 0 0 10px white; pointer-events: none; z-index: 3005;
+            animation: nicknameFloat 1.5s ease-out forwards;
+        }
+        @keyframes nicknameFloat {
+            0% { transform: scale(0.5); opacity: 1; }
+            100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
+        }
+
+        .click-emoji { position: fixed; pointer-events: none; z-index: 3001; font-size: 24px; animation: floatUp 2s ease-out forwards; }
+        @keyframes floatUp { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-120px) scale(1.8); opacity: 0; } }
+
+    </style>
+</head>
+<body onclick="createClickHeart(event)">
+
+    <div id="question-screen">
+        <h1 id="question-text">Will you be my Valentine?</h1>
+        <div class="button-group">
+            <button id="yes-btn" class="ans-btn" onclick="celebrateYes(event)">YES</button>
+            <button id="no-btn" class="ans-btn" onmouseover="handleNo()">NO</button>
+        </div>
+    </div>
+
+    <div id="main-content">
+        <h1>Happy Valentine's Day MY SWEET SWEET GIRL! ❤️</h1>
+        <div id="counter-box">Loving you since March 19, 2025:<br><span id="timer"></span></div>
+
+        <div class="gallery-container">
+            <img src="photo1.JPG" class="photo active">
+            <img src="photo2.JPG" class="photo">
+            <img src="photo3.JPG" class="photo">
+            <img src="photo4.JPG" class="photo">
+            <img src="photo5.JPG" class="photo">
+            <img src="photo6.JPG" class="photo">
+            <img src="photo7.JPG" class="photo">
+            <img src="photo8.JPG" class="photo">
+            <img src="photo9.JPG" class="photo">
+            <img src="photo10.JPG" class="photo">
+        </div>
+
+        <button class="btn" id="msg-btn" onclick="revealLetter()">Click for a message</button>
+
+        <div class="letter-box" id="secretLetter">
+            <h2>To My Baby,</h2>
+            <p>
+                HAIII BABYYYY, I wanted to make something SUPER special for you because telling you how I feel never seems like enough. 
+                You are the kindest, most beautiful person I’ve ever known, and every day with you is an adventure, a fantasy that 
+                I never wanna escape from. <br><br>
+                Baby, I’m so lucky to call you mine. Thank you for being my sweet girl, my best friend, and my love. 
+                You’re really the best and I’m so grateful to have you in my life.
+            </p>
+            <button class="btn" onclick="revealCoupons()">Claim Your Gifts 🎁</button>
+        </div>
+
+        <div id="coupon-section">
+            <h2 style="color: #d6336c;">Your Love Coupons</h2>
+            <div class="coupon-grid">
+                <div class="coupon" onclick="openCoupon(this, 'A PHOTO OF ME')">Gift #1</div>
+                <div class="coupon" onclick="openCoupon(this, 'SUPER SPECIAL VALENTINES LOVE VOICE NOTE')">Gift #2</div>
+                <div class="coupon" onclick="openCoupon(this, 'MOVIE NIGHT')">Gift #3</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const nicknames = ["Mine", "Princess", "Precious little angel", "Cariño", "Wifey", "My love", "Gorgeous", "Forevermore", "Sweetheart", "Sweetie", "Sweet girl"];
+        const startDate = new Date("March 19, 2025 11:52:00").getTime();
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const diff = now - startDate;
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+            document.getElementById("timer").innerHTML = `${days} Days, ${hours}h, ${mins}m, ${secs}s`;
+        }
+        setInterval(updateTimer, 1000);
+
+        let yesSize = 1;
+        function handleNo() {
+            const btn = document.getElementById('no-btn');
+            const x = Math.random() * (window.innerWidth - btn.offsetWidth);
+            const y = Math.random() * (window.innerHeight - btn.offsetHeight);
+            btn.style.position = 'fixed'; btn.style.left = x + 'px'; btn.style.top = y + 'px';
+            yesSize += 0.25; document.getElementById('yes-btn').style.transform = `scale(${yesSize})`;
+        }
+
+        function celebrateYes(e) {
+            for(let i=0; i<15; i++) {
+                setTimeout(() => createClickHeart({clientX: e.clientX + (Math.random()-0.5)*100, clientY: e.clientY + (Math.random()-0.5)*100}), i*50);
+            }
+            setTimeout(startSite, 500);
+        }
+
+        function startSite() {
+            document.getElementById('question-screen').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('question-screen').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                setTimeout(() => document.getElementById('main-content').style.opacity = '1', 50);
+                document.body.style.overflow = 'auto';
+            }, 500);
+        }
+
+        function revealLetter() {
+            document.getElementById('secretLetter').style.display = 'block';
+            document.getElementById('msg-btn').style.display = 'none';
+            setInterval(spawnFallingEmoji, 400);
+        }
+
+        function spawnFallingEmoji() {
+            const emojis = ['❤️', '💖', '💋', '💝'];
+            const item = document.createElement('div');
+            item.classList.add('falling-emoji');
+            item.innerHTML = emojis[Math.floor(Math.random() * emojis.length)];
+            item.style.left = Math.random() * 100 + 'vw';
+            item.style.fontSize = (Math.random() * 20 + 20) + 'px';
+            item.style.top = "-50px";
+            item.style.animationDuration = (Math.random() * 3 + 4) + 's';
+            
+            item.onmouseover = () => {
+                const pop = document.createElement('div');
+                pop.classList.add('nickname-pop');
+                pop.innerHTML = nicknames[Math.floor(Math.random() * nicknames.length)];
+                pop.style.left = item.style.left;
+                pop.style.top = item.getBoundingClientRect().top + 'px';
+                document.body.appendChild(pop);
+                item.remove();
+                setTimeout(() => pop.remove(), 1500);
+            };
+
+            document.body.appendChild(item);
+            setTimeout(() => item.remove(), 7000);
+        }
+
+        function createClickHeart(e) {
+            const heart = document.createElement('div');
+            heart.classList.add('click-emoji');
+            heart.innerHTML = '❤️';
+            heart.style.left = (e.clientX - 10) + 'px';
+            heart.style.top = (e.clientY - 10) + 'px';
+            document.body.appendChild(heart);
+            setTimeout(() => heart.remove(), 2000);
+        }
+
+        function openCoupon(element, text) {
+            if(!element.classList.contains('opened')) {
+                element.innerHTML = text;
+                element.classList.add('opened');
+            }
+        }
+
+        function revealCoupons() {
+            document.getElementById('coupon-section').style.display = 'block';
+            setTimeout(() => window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' }), 100);
+        }
+
+        let currentPhoto = 0;
+        const photos = document.querySelectorAll('.photo');
+        setInterval(() => {
+            if(photos.length > 0) {
+                photos[currentPhoto].classList.remove('active');
+                currentPhoto = (currentPhoto + 1) % photos.length;
+                photos[currentPhoto].classList.add('active');
+            }
+        }, 2500);
+    </script>
+</body>
+</html>
